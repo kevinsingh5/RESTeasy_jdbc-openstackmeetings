@@ -11,7 +11,7 @@ public interface OpenStackMeetingsService {
 	public NewProject updateProject(NewProject newProject) throws Exception;
 
 	public Project getProject(Project project) throws Exception;
-	
-	//public List<String> getData(String link, String value);
 
+	public Project deleteProject(Project project) throws Exception;
+	
 }

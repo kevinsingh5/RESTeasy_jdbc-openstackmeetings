@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -116,6 +117,19 @@ public class OpenStackMeetingsResource {
 		return project;
 	}
 	
+	@DELETE
+	@Path("/{project_id}")
+	@Produces("application/xml")
+	public Response deleteProject(@PathParam("project_id") int pid) {
+		Project project = readDeleteProject(pid);
+		try {
+			project = osmService.deleteProject(project);
+		} catch (Exception e) {
+			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
+		}
+		return Response.ok().build();
+	}
+	
 	
 	protected NewProject readNewProject(InputStream is) {
 		try {
@@ -192,72 +206,12 @@ public class OpenStackMeetingsResource {
 
 		return project;
 	}
-	
-	
-	// return the meetings for a specific project
-//	@GET
-//	@Path("/{project_id}/meetings")
-//	@Produces("application/xml")
-//	public StreamingOutput getMeeting(@PathParam("project_id") String project_id) throws Exception {
-//		final Meetings meetings = new Meetings();
-//		List<String> meetingList = osmService.getData(link, project_id);	
-//		
-//		if(meetingList != null) {
-//			meetings.setMeetings(meetingList);
-//			return new StreamingOutput() {
-//		         public void write(OutputStream outputStream) throws IOException, WebApplicationException {
-//		            outputMeetings(outputStream, meetings);
-//		         }
-//		    };
-//		} else {
-//			final ErrorHandler error = new ErrorHandler();
-//			error.setError("Project " + project_id + " does not exist");
-//			return new StreamingOutput() {
-//		         public void write(OutputStream outputStream) throws IOException, WebApplicationException {
-//		            outputMeetings(outputStream, error);
-//		         }
-//		    };
-//		}	    
-//	}
 
-	// outputs the meetings from getMeetings()
-	protected void outputProjects(OutputStream os, Project project) throws IOException {
-		try { 
-			JAXBContext jaxbContext = JAXBContext.newInstance(Project.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-	 
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			jaxbMarshaller.marshal(project, os);
-		} catch (JAXBException jaxb) {
-			jaxb.printStackTrace();
-			throw new WebApplicationException();
-		}
+	protected Project readDeleteProject(int pid) {
+		Project project = new Project();
+		project.setProjectID(pid);
+
+		return project;
 	}
-	
-	protected void outputMeetings(OutputStream os, Meetings meetings) throws IOException {
-		try { 
-			JAXBContext jaxbContext = JAXBContext.newInstance(Meetings.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-	 
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			jaxbMarshaller.marshal(meetings, os);
-		} catch (JAXBException jaxb) {
-			jaxb.printStackTrace();
-			throw new WebApplicationException();
-		}
-	}	
-	
-	// outputs the error from getMeetings()
-	protected void outputMeetings(OutputStream os, ErrorHandler error) throws IOException {
-		try { 
-			JAXBContext jaxbContext = JAXBContext.newInstance(ErrorHandler.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-	 
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			jaxbMarshaller.marshal(error, os);
-		} catch (JAXBException jaxb) {
-			jaxb.printStackTrace();
-			throw new WebApplicationException();
-		}
-	}
+		
 }

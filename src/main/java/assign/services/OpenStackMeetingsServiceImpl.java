@@ -19,11 +19,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import assign.domain.NewProject;
 import assign.domain.Project;
 
-//import org.jsoup.Jsoup;
-//import org.jsoup.nodes.Document;
-//import org.jsoup.nodes.Element;
-//import org.jsoup.select.Elements;
-
 
 public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {	
 	
@@ -125,9 +120,6 @@ public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {
 		ResultSet result;
 		try {
 			result = stmt.executeQuery(); // executeUpdate() doesn't return any values
-//	        if (affectedRows == 0) {
-//	            throw new SQLException("project_id not found. Updating project failed, no rows affected.");
-//	        }
 		} catch (SQLException e) {
 			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
 		}
@@ -146,35 +138,30 @@ public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {
 		return proj;
 	}
 
-//	public List<String> getData(String link, String value) {
-//		Document doc = null;
-//		// try to load the project page
-//		try {
-//			doc = Jsoup.connect(link + "/" + value).get();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//		
-//		// get the web page's elements
-//		Elements items = null;
-//		if (doc != null) {
-//			items = doc.select("tr td a[href]");		
-//		} else {
-//			return null;
-//		}
-//		
-//		// extract the elements and store them in a linked list
-//		List<String> itemList = new LinkedList<String>();
-//		ListIterator<Element> iterator = items.listIterator();		    	
-//		while(iterator.hasNext()) {
-//	    	Element e = (Element) iterator.next();
-//    		String s = e.html();
-//    		if (s.equalsIgnoreCase("Parent Directory"))
-//    			continue;
-//    		itemList.add(s);
-//	    }
-//		return itemList;
-//	}
+	public Project deleteProject(Project proj) throws Exception {
+		// establish connection to the database specified by DataSource ds
+		Connection conn = ds.getConnection();
+		
+		String update = "DELETE FROM projects WHERE project_id=?";
+		PreparedStatement stmt = conn.prepareStatement(update,
+                Statement.RETURN_GENERATED_KEYS); // gets keys back
+		
+		stmt.setInt(1, proj.getProjectID());
+
+		try {
+			int affectedRows = stmt.executeUpdate(); // executeUpdate() doesn't return any values
+	        if (affectedRows == 0) {
+	            throw new SQLException("project_id not found. Deleting project failed, no rows affected.");
+	        }
+		} catch (SQLException e) {
+			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
+		}
+		
+        
+        // Close the connection
+        conn.close();
+		return proj;
+	}
+	
 	
 }
