@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.dbcp.BasicDataSource;
 
 import assign.domain.NewProject;
+import assign.domain.Project;
 
 //import org.jsoup.Jsoup;
 //import org.jsoup.nodes.Document;
@@ -76,7 +77,6 @@ public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {
         
         // Close the connection
         conn.close();
-        
 		return proj;
 	}
 	
@@ -95,7 +95,7 @@ public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {
 		try {
 			int affectedRows = stmt.executeUpdate(); // executeUpdate() doesn't return any values
 	        if (affectedRows == 0) {
-	            throw new SQLException("Updating project failed, no rows affected.");
+	            throw new SQLException("project_id not found. Updating project failed, no rows affected.");
 	        }
 		} catch (SQLException e) {
 			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
@@ -109,7 +109,40 @@ public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {
         
         // Close the connection
         conn.close();
+		return proj;
+	}
+	
+	public Project getProject(Project proj) throws Exception {
+		// establish connection to the database specified by DataSource ds
+		Connection conn = ds.getConnection();
+		
+		String update = "SELECT * FROM projects WHERE project_id=?";
+		PreparedStatement stmt = conn.prepareStatement(update,
+                Statement.RETURN_GENERATED_KEYS); // gets keys back
+		
+		stmt.setInt(1, proj.getProjectID());
+
+		ResultSet result;
+		try {
+			result = stmt.executeQuery(); // executeUpdate() doesn't return any values
+//	        if (affectedRows == 0) {
+//	            throw new SQLException("project_id not found. Updating project failed, no rows affected.");
+//	        }
+		} catch (SQLException e) {
+			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
+		}
+		
+        //ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (result.next()) {
+        	proj.setName(result.getString("name"));
+        	proj.setProjectID(result.getInt("project_id"));
+        	proj.setDescription(result.getString("description"));
+        } else {
+        	throw new WebApplicationException();
+        }
         
+        // Close the connection
+        conn.close();
 		return proj;
 	}
 

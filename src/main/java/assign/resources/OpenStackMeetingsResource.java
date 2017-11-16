@@ -74,7 +74,7 @@ public class OpenStackMeetingsResource {
 	@Produces("application/xml")
 	public Projects getAllProjects() throws Exception {
 		//String link = "http://eavesdrop.openstack.org/meetings";
-		String value = "";
+		//String value = "";
 		Projects projects = new Projects();
 		//List<String> projectList = osmService.getData(link, value);
 		//projects.setProjects(projectList);
@@ -101,6 +101,19 @@ public class OpenStackMeetingsResource {
 		NewProject newProject = readUpdatedProject(is, pid);
 		newProject = this.osmService.updateProject(newProject);
 		return Response.noContent().build();
+	}
+	
+	@GET
+	@Path("/{project_id}")
+	@Produces("application/xml")
+	public Project getProject(@PathParam("project_id") int pid) {
+		Project project = readGetProject(pid);
+		try {
+			project = osmService.getProject(project);
+		} catch (Exception e) {
+			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
+		}
+		return project;
 	}
 	
 	
@@ -173,6 +186,13 @@ public class OpenStackMeetingsResource {
 		}
    }
 	
+	protected Project readGetProject(int pid) {
+		Project project = new Project();
+		project.setProjectID(pid);
+
+		return project;
+	}
+	
 	
 	// return the meetings for a specific project
 //	@GET
@@ -201,6 +221,19 @@ public class OpenStackMeetingsResource {
 //	}
 
 	// outputs the meetings from getMeetings()
+	protected void outputProjects(OutputStream os, Project project) throws IOException {
+		try { 
+			JAXBContext jaxbContext = JAXBContext.newInstance(Project.class);
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+	 
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			jaxbMarshaller.marshal(project, os);
+		} catch (JAXBException jaxb) {
+			jaxb.printStackTrace();
+			throw new WebApplicationException();
+		}
+	}
+	
 	protected void outputMeetings(OutputStream os, Meetings meetings) throws IOException {
 		try { 
 			JAXBContext jaxbContext = JAXBContext.newInstance(Meetings.class);

@@ -1,8 +1,7 @@
 package assign.services;
 
-import java.util.List;
-
 import assign.domain.NewProject;
+import assign.domain.Project;
 
 
 public interface OpenStackMeetingsService {
@@ -10,6 +9,8 @@ public interface OpenStackMeetingsService {
 	public NewProject addProject(NewProject newProject) throws Exception;
 		
 	public NewProject updateProject(NewProject newProject) throws Exception;
+
+	public Project getProject(Project project) throws Exception;
 	
 	//public List<String> getData(String link, String value);
 
