@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.sql.DataSource;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -70,6 +72,39 @@ public class OpenStackMeetingsServiceImpl implements OpenStackMeetingsService {
         }
         else {
             throw new SQLException("Creating project failed, no ID obtained.");
+        }
+        
+        // Close the connection
+        conn.close();
+        
+		return proj;
+	}
+	
+	
+	public NewProject updateProject(NewProject proj) throws Exception {
+		// establish connection to the database specified by DataSource ds
+		Connection conn = ds.getConnection();
+		
+		String update = "UPDATE projects SET description=? WHERE project_id=?";
+		PreparedStatement stmt = conn.prepareStatement(update,
+                Statement.RETURN_GENERATED_KEYS); // gets keys back
+		
+		stmt.setString(1, proj.getDescription());
+		stmt.setInt(2, proj.getProjectID());
+
+		try {
+			int affectedRows = stmt.executeUpdate(); // executeUpdate() doesn't return any values
+	        if (affectedRows == 0) {
+	            throw new SQLException("Updating project failed, no rows affected.");
+	        }
+		} catch (SQLException e) {
+			throw new WebApplicationException(e, Response.Status.NOT_FOUND);
+		}
+		
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        while (generatedKeys.next()) {
+        	proj.setProjectID(generatedKeys.getInt(1));
+        	proj.setDescription(generatedKeys.getString("description"));
         }
         
         // Close the connection

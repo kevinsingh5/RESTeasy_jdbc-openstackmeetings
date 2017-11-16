@@ -7,8 +7,10 @@ import assign.domain.NewProject;
 
 public interface OpenStackMeetingsService {
 
-	NewProject addProject(NewProject newProject) throws Exception;
+	public NewProject addProject(NewProject newProject) throws Exception;
 		
+	public NewProject updateProject(NewProject newProject) throws Exception;
+	
 	//public List<String> getData(String link, String value);
 
 }
